@@ -5,8 +5,6 @@ import { CommonModule } from '@angular/common';
 import { StyleClassModule } from 'primeng/styleclass';
 import { LayoutService } from '../service/layout.service';
 import { PopoverModule } from 'primeng/popover';
-import { User } from '@/types/user';
-import { UserService } from '@/services/user.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
 
@@ -59,14 +57,6 @@ export class AppTopbar {
     items!: MenuItem[];
     logoSvgContent!: SafeHtml;
     logoPath: string = 'images/logo.svg'; // Path from your 'public' folder
-
-    user = signal<User>({
-        id: 0,
-        email: '',
-        firstName: '',
-        lastName: '',
-        familyId: 0
-    });
 
     constructor(
         public layoutService: LayoutService,

@@ -3,7 +3,7 @@
     "version": 1,
     "newProjectRoot": "projects",
     "projects": {
-        "family-budget": {
+        "log-tools": {
             "projectType": "application",
             "schematics": {
                 "@schematics/angular:component": {
@@ -17,7 +17,7 @@
                 "build": {
                     "builder": "@angular-devkit/build-angular:application",
                     "options": {
-                        "outputPath": "dist/family-budget",
+                        "outputPath": "dist/log-tools",
                         "index": "src/index.html",
                         "browser": "src/main.ts",
                         "polyfills": [
@@ -58,10 +58,10 @@
                     "builder": "@angular-devkit/build-angular:dev-server",
                     "configurations": {
                         "production": {
-                            "buildTarget": "family-budget:build:production"
+                            "buildTarget": "log-tools:build:production"
                         },
                         "development": {
-                            "buildTarget": "family-budget:build:development"
+                            "buildTarget": "log-tools:build:development"
                         }
                     },
                     "defaultConfiguration": "development"
