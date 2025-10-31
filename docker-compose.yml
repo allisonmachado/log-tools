@@ -1,0 +1,37 @@
+name: log-tools
+services:
+  log-tools-backend:
+    container_name: log-tools-backend
+    ports:
+      - "9229:9229"
+    build:
+      context: ./packages/backend
+      dockerfile: ./Dockerfile
+    env_file:
+      - ./packages/backend/.env
+    volumes:
+      - ./packages/backend/src:/app/src
+    restart: unless-stopped
+    depends_on:
+      - log-tools-database
+  log-tools-frontend:
+    container_name: log-tools-frontend
+    build:
+      context: ./packages/frontend
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./packages/frontend/src:/app/src
+    restart: unless-stopped
+    depends_on:
+      - log-tools-backend
+  log-tools-server:
+    container_name: log-tools-server
+    build:
+      context: ./packages/server
+      dockerfile: ./Dockerfile
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - log-tools-frontend
+      - log-tools-backend

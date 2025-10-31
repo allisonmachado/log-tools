@@ -1,0 +1,28 @@
+{
+  "name": "log-tools",
+  "version": "0.0.0",
+  "scripts": {
+    "list:containers": "docker ps -a --filter \"label=com.docker.compose.project=log-tools\" --format \"table {{.ID}}\\t{{.Names}}\\t{{.Image}}\\t{{.Status}}\"",
+    "list:networks": "docker network ls --filter \"label=com.docker.compose.project=log-tools\"",
+    "list:volumes": "docker volume ls --filter \"label=com.docker.compose.project=log-tools\"",
+    "list:images": "docker compose -p log-tools images",
+    "compose:ps": "docker compose -p log-tools ps --all",
+    "compose:stop": "docker compose -p log-tools stop",
+    "compose:config": "docker compose -p log-tools config",
+    "list:all": "npm run list:containers && echo && npm run list:networks && echo && npm run list:volumes && echo && npm run list:images",
+    "clean:all": "docker compose -p log-tools down -v --rmi all",
+    "start": "docker compose -p log-tools up --build",
+    "start:detached": "docker compose -p log-tools up --build -d",
+    "migration:run": "docker exec log-tools-backend npm run migration:run",
+    "migration:revert": "docker exec log-tools-backend npm run migration:revert",
+    "seed:development": "docker exec log-tools-backend npm run seed:development"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/allisonmachado/log-tools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/allisonmachado/log-tools/issues"
+  },
+  "homepage": "https://github.com/allisonmachado/log-tools#readme"
+}

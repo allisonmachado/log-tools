@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Cognito User Pool + App Client + Hosted UI domain
+
+Resources:
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "${AWS::StackName}-user-pool"
+      MfaConfiguration: "OFF"
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      UsernameAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 6
+          RequireLowercase: false
+          RequireNumbers: false
+          RequireSymbols: false
+          RequireUppercase: false
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub "${AWS::StackName}-app-client"
+      UserPoolId: !Ref CognitoUserPool
+      SupportedIdentityProviders:
+        - COGNITO
+      GenerateSecret: true
+      AllowedOAuthFlowsUserPoolClient: true
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - email
+        - openid
+      CallbackURLs:
+        - http://localhost/auth/callback
+        - https://test.allison.bsb.br/auth/callback
+      LogoutURLs:
+        - http://localhost
+        - https://test.allison.bsb.br
+      PreventUserExistenceErrors: ENABLED
+
+  CognitoUserPoolDomain: 
+    Type: AWS::Cognito::UserPoolDomain 
+    Properties:
+      UserPoolId: !Ref CognitoUserPool
+      Domain: !Sub "${AWS::Region}-${AWS::AccountId}-domain"
+      ManagedLoginVersion: "2"
+
+  CognitoManagedLoginBranding:
+    Type: AWS::Cognito::ManagedLoginBranding
+    Properties:
+      ClientId: !Ref CognitoUserPoolClient
+      UserPoolId: !Ref CognitoUserPool
+      UseCognitoProvidedValues: true
+
+
+Outputs:
+  UserPoolId:
+    Description: "The ID of the Cognito User Pool."
+    Value: !Ref CognitoUserPool
+
+  UserPoolDomain:
+    Description: "The domain of the Cognito User Pool."
+    Value: !Sub "${CognitoUserPoolDomain}.auth.${AWS::Region}.amazoncognito.com"
+
+  UserPoolClientId:
+    Description: "The ID of the Cognito User Pool Client."
+    Value: !Ref CognitoUserPoolClient
+
+  UserPoolClientSecret:
+    Description: "The secret of the Cognito User Pool Client."
+    Value: !GetAtt CognitoUserPoolClient.ClientSecret

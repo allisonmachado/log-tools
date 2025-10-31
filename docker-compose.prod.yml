@@ -1,0 +1,30 @@
+# docker compose -f docker-compose.prod.yml -p log-tools up -d
+# docker compose -f docker-compose.prod.yml -p log-tools down -v --rmi all
+name: log-tools
+services:
+  log-tools-backend:
+    container_name: log-tools-backend
+    image: allison/log-tools-backend:0.0.7
+    env_file:
+      - ./packages/backend/.env
+    restart: unless-stopped
+    depends_on:
+      - log-tools-database
+  log-tools-frontend:
+    container_name: log-tools-frontend
+    image: allison/log-tools-frontend:0.0.7
+    restart: unless-stopped
+    depends_on:
+      - log-tools-backend
+  log-tools-server:
+    container_name: log-tools-server
+    image: allison/log-tools-server:0.0.7
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - log-tools-frontend
+      - log-tools-backend
+
+volumes:
+  family_budget_database_data:

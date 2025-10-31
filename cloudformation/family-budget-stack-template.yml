@@ -1,0 +1,185 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: A CloudFormation template to deploy personal project Family Budget.
+
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair for SSH access.
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: Must be the name of an existing EC2 KeyPair.
+
+Resources:
+  EIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  EC2Instance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      InstanceType: t4g.micro
+      KeyName: !Ref KeyName
+      ImageId: ami-01b2110eef525172b
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroup
+      UserData:
+        "Fn::Base64": !Sub |
+          #!/bin/bash
+          # ===============================
+          # EC2 User Data Script
+          # Installs Docker, Docker Compose, and Node.js (LTS) on Ubuntu 22.04
+          # ===============================
+
+          set -euxo pipefail
+
+          # --- Update system and install prerequisites ---
+          apt-get update -y
+          apt-get install -y \
+              ca-certificates \
+              curl \
+              gnupg \
+              lsb-release \
+              apt-transport-https \
+              software-properties-common
+
+          # ==========================================================
+          # Install Docker and Docker Compose
+          # ==========================================================
+
+          # --- Add Docker’s official GPG key ---
+          install -m 0755 -d /etc/apt/keyrings
+          if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+                  gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+          fi
+          chmod a+r /etc/apt/keyrings/docker.gpg
+
+          # --- Set up the Docker repository ---
+          echo \
+            "deb [arch=$(dpkg --print-architecture) \
+            signed-by=/etc/apt/keyrings/docker.gpg] \
+            https://download.docker.com/linux/ubuntu \
+            $(lsb_release -cs) stable" \
+            > /etc/apt/sources.list.d/docker.list
+
+          # --- Install Docker Engine, CLI, containerd, and plugin ---
+          apt-get update -y
+          apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+          # --- Enable and start Docker service ---
+          systemctl enable docker
+          systemctl start docker
+
+          # --- Verify Docker installation ---
+          docker --version
+          docker compose version
+
+          # --- (Optional) Add ubuntu user to docker group ---
+          if id ubuntu &>/dev/null; then
+              usermod -aG docker ubuntu
+              echo "User 'ubuntu' added to docker group."
+          fi
+
+          # ==========================================================
+          # Install Node.js (LTS)
+          # ==========================================================
+
+          # --- Add NodeSource repository for Node.js LTS (e.g., 18.x or 20.x) ---
+          curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
+
+          # --- Install Node.js and npm ---
+          apt-get install -y nodejs
+
+          # --- Verify installation ---
+          node -v
+          npm -v
+
+
+          # ==========================================================
+          # Add private keys
+          # ==========================================================
+          ssh-keygen -t ed25519 -N "" -f ~/.ssh/family_budget_deploy_key
+
+          cat <<EOF > ~/.ssh/config
+          Host github.com
+            HostName github.com
+            User git
+            IdentityFile ~/.ssh/family_budget_deploy_key
+            IdentitiesOnly yes
+          EOF
+
+          chmod 700 ~/.ssh
+          chmod 600 ~/.ssh/config
+
+          # ==========================================================
+          # Done
+          # ==========================================================
+          echo "Docker, Docker Compose, and Node.js installed successfully."
+
+          docker run -d --restart always -p 80:80 nginx
+
+  EIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      InstanceId: !Ref EC2Instance
+      AllocationId: !GetAtt EIP.AllocationId
+
+  InstanceSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Enable HTTP and SSH access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: "22"
+          ToPort: "22"
+          CidrIp: 0.0.0.0/0
+          Description: "Allow SSH access from anywhere"
+        - IpProtocol: tcp
+          FromPort: "80"
+          ToPort: "80"
+          CidrIp: 0.0.0.0/0
+          Description: "Allow HTTP access from anywhere"
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub "CloudFront distribution for Family Budget App - ${AWS::StackName}"
+        PriceClass: "PriceClass_100"
+        Aliases:
+          - "test.allison.bsb.br"
+        Origins:
+          - Id: !Sub "EC2-Origin-${EC2Instance}"
+            DomainName: eip.allison.bsb.br
+            CustomOriginConfig:
+              HTTPPort: 80
+              OriginProtocolPolicy: http-only
+        DefaultCacheBehavior:
+          TargetOriginId: !Sub "EC2-Origin-${EC2Instance}"
+          ViewerProtocolPolicy: redirect-to-https
+          Compress: true
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+            - PUT
+            - POST
+            - PATCH
+            - DELETE
+          CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+          OriginRequestPolicyId: "216adef6-5c7f-47e4-b989-5492eafa07d3"
+        ViewerCertificate:
+          AcmCertificateArn: "arn:aws:acm:us-east-1:544757346850:certificate/90d3c2d1-82e9-4427-b29c-8a6b7d09e793"
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+
+Outputs:
+  InstancePublicIp:
+    Description: Public IP address of the newly created EC2 instance (Elastic IP)
+    Value: !Ref EIP
+  CloudFrontDomainName:
+    Description: The domain name of the CloudFront distribution. Use this for your CNAME record.
+    Value: !GetAtt CloudFrontDistribution.DomainName
+  SSHCommand:
+    Description: Command to SSH into the EC2 instance
+    Value: !Sub 'ssh -i "family-budget-app-key.pem" ubuntu@${EIP}'
