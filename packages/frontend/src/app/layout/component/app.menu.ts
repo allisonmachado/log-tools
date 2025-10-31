@@ -23,18 +23,6 @@ export class AppMenu {
             {
                 label: 'Home',
                 items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
-            },
-            {
-                label: 'Pages',
-                icon: 'pi pi-fw pi-briefcase',
-                routerLink: ['/pages'],
-                items: [
-                    {
-                        label: 'Budget Intervals',
-                        icon: 'pi pi-fw pi-calendar',
-                        routerLink: ['/budget-intervals']
-                    }
-                ]
             }
         ];
     }
