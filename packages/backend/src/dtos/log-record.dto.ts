@@ -1,4 +1,4 @@
-import { IsDefined, IsString } from 'class-validator';
+import { IsDefined, IsString, IsIn } from 'class-validator';
 
 export class LogRecordDto {
   @IsDefined()
@@ -7,5 +7,6 @@ export class LogRecordDto {
 
   @IsDefined()
   @IsString()
+  @IsIn(['error', 'log', 'warn', 'debug', 'verbose'])
   level: string;
 }

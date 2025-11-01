@@ -1,24 +1,20 @@
 import {
   Body,
   Controller,
-  Logger,
   Post,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { LogRecordDto } from 'src/dtos/log-record.dto';
+import { LogsService } from 'src/services/family.service';
 
 @Controller('logs')
 export class LogController {
-  private readonly logger = new Logger(LogController.name, {
-    timestamp: true,
-  });
-
-  constructor() {}
+  constructor(private logService: LogsService) {}
 
   @Post()
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   createLogRecord(@Body() logRecord: LogRecordDto) {
-    this.logger.log(logRecord.message);
+    this.logService.logMessage(logRecord);
   }
 }
