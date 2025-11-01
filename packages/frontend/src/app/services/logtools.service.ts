@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { delay, Observable, of } from 'rxjs';
 import { LogData } from '@/types/logs';
 
 @Injectable({
@@ -11,6 +11,6 @@ export class LogToolsService {
 
     sendLogRecord(logData: Partial<LogData>): Observable<any> {
         console.log('Log record sent:', logData);
-        return of(null);
+        return of(null).pipe(delay(2000));
     }
 }

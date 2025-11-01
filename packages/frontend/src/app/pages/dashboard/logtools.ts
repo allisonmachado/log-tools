@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FluidModule } from 'primeng/fluid';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -7,11 +7,13 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { TextareaModule } from 'primeng/textarea';
 import { LogToolsService } from '@/services/logtools.service';
 import { MessageService } from 'primeng/api';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { finalize } from 'rxjs';
 
 @Component({
     selector: 'app-log-tools',
     standalone: true,
-    imports: [InputTextModule, FluidModule, ButtonModule, SelectModule, FormsModule, TextareaModule, ReactiveFormsModule],
+    imports: [InputTextModule, FluidModule, ButtonModule, SelectModule, FormsModule, TextareaModule, ReactiveFormsModule, ProgressSpinnerModule],
     template: `<p-fluid>
         <form [formGroup]="logsForm">
             <div class="flex mt-8">
@@ -38,8 +40,12 @@ import { MessageService } from 'primeng/api';
 
                     <div class="flex flex-col gap-6">
                         <div class="flex flex-wrap gap-3">
-                            <p-button label="Send" (onClick)="submitLogs()" />
-                            <p-button label="Clear" severity="secondary" (onClick)="onClear()" />
+                            @if (loading()) {
+                                <p-progress-spinner ariaLabel="loading" />
+                            } @else {
+                                <p-button label="Send" (onClick)="submitLogs()" />
+                                <p-button label="Clear" severity="secondary" (onClick)="onClear()" />
+                            }
                         </div>
                     </div>
                 </div>
@@ -49,7 +55,7 @@ import { MessageService } from 'primeng/api';
 })
 export class LogTools {
     logsForm!: FormGroup;
-
+    loading = signal<boolean>(true);
     logLevels = [
         { name: 'Debug', code: 'Debug' },
         { name: 'Info', code: 'Info' },
@@ -67,6 +73,7 @@ export class LogTools {
             message: ['', Validators.required],
             level: ['', Validators.required]
         });
+        this.loading.set(false);
     }
 
     onClear() {
@@ -80,11 +87,16 @@ export class LogTools {
             });
             return;
         }
+
+        this.loading.set(true);
         const logData = this.logsForm.value;
 
-        this.logService.sendLogRecord(logData).subscribe(() => {
-            this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Log Record Sent Successfully', life: 3000 });
-            this.logsForm.reset();
-        });
+        this.logService
+            .sendLogRecord(logData)
+            .pipe(finalize(() => this.loading.set(false)))
+            .subscribe(() => {
+                this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Log Record Sent Successfully', life: 3000 });
+                this.logsForm.reset();
+            });
     }
 }
