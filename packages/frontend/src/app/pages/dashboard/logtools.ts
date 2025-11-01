@@ -5,6 +5,8 @@ import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TextareaModule } from 'primeng/textarea';
+import { LogToolsService } from '@/services/logtools.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
     selector: 'app-log-tools',
@@ -54,7 +56,11 @@ export class LogTools {
         { name: 'Error', code: 'Error' }
     ];
 
-    constructor(private formBuilder: FormBuilder) {}
+    constructor(
+        private formBuilder: FormBuilder,
+        private logService: LogToolsService,
+        private messageService: MessageService
+    ) {}
 
     ngOnInit() {
         this.logsForm = this.formBuilder.group({
@@ -75,8 +81,10 @@ export class LogTools {
             return;
         }
         const logData = this.logsForm.value;
-        // Logic to send logs goes here
-        console.log('Logs submitted:', logData);
-        this.logsForm.reset();
+
+        this.logService.sendLogRecord(logData).subscribe(() => {
+            this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Log Record Sent Successfully', life: 3000 });
+            this.logsForm.reset();
+        });
     }
 }
