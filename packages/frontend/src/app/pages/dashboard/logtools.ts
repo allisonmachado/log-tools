@@ -9,6 +9,7 @@ import { LogToolsService } from '@/services/logtools.service';
 import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { finalize } from 'rxjs';
+import { BackendErrorHandlerService } from '@/services/backenderrorhandler.service';
 
 @Component({
     selector: 'app-log-tools',
@@ -65,7 +66,8 @@ export class LogTools {
     constructor(
         private formBuilder: FormBuilder,
         private logService: LogToolsService,
-        private messageService: MessageService
+        private messageService: MessageService,
+        private errorHandler: BackendErrorHandlerService
     ) {}
 
     ngOnInit() {
@@ -94,9 +96,12 @@ export class LogTools {
         this.logService
             .sendLogRecord(logData)
             .pipe(finalize(() => this.loading.set(false)))
-            .subscribe(() => {
-                this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Log Record Sent Successfully', life: 3000 });
-                this.logsForm.reset();
+            .subscribe({
+                next: () => {
+                    this.messageService.add({ severity: 'success', summary: 'Successful', detail: 'Log Record Sent Successfully', life: 3000 });
+                    this.logsForm.reset();
+                },
+                error: this.errorHandler.notify()
             });
     }
 }
