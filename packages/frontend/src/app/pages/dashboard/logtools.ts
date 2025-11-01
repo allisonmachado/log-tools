@@ -42,7 +42,7 @@ import { BackendErrorHandlerService } from '@/services/backenderrorhandler.servi
                     <div class="flex flex-col gap-6">
                         <div class="flex flex-wrap gap-3">
                             @if (loading()) {
-                                <p-progress-spinner ariaLabel="loading" />
+                                <p-progress-spinner ariaLabel="loading" [style]="{ width: '50px', height: '50px' }" />
                             } @else {
                                 <p-button label="Send" (onClick)="submitLogs()" />
                                 <p-button label="Clear" severity="secondary" (onClick)="onClear()" />
