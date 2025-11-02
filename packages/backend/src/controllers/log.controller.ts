@@ -6,7 +6,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { LogRecordDto } from 'src/dtos/log-record.dto';
-import { LogsService } from 'src/services/family.service';
+import { LogsService } from 'src/services/logs.service';
 
 @Controller('logs')
 export class LogController {

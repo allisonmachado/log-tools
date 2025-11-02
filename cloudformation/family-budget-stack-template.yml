@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: A CloudFormation template to deploy personal project Family Budget.
+Description: A CloudFormation template to deploy personal project LogTools.
 
 Parameters:
   KeyName:
@@ -97,13 +97,13 @@ Resources:
           # ==========================================================
           # Add private keys
           # ==========================================================
-          ssh-keygen -t ed25519 -N "" -f ~/.ssh/family_budget_deploy_key
+          ssh-keygen -t ed25519 -N "" -f ~/.ssh/log_tools_deploy_key
 
           cat <<EOF > ~/.ssh/config
           Host github.com
             HostName github.com
             User git
-            IdentityFile ~/.ssh/family_budget_deploy_key
+            IdentityFile ~/.ssh/log_tools_deploy_key
             IdentitiesOnly yes
           EOF
 
@@ -144,7 +144,7 @@ Resources:
     Properties:
       DistributionConfig:
         Enabled: true
-        Comment: !Sub "CloudFront distribution for Family Budget App - ${AWS::StackName}"
+        Comment: !Sub "CloudFront distribution for LogTools - ${AWS::StackName}"
         PriceClass: "PriceClass_100"
         Aliases:
           - "test.allison.bsb.br"
@@ -182,4 +182,4 @@ Outputs:
     Value: !GetAtt CloudFrontDistribution.DomainName
   SSHCommand:
     Description: Command to SSH into the EC2 instance
-    Value: !Sub 'ssh -i "family-budget-app-key.pem" ubuntu@${EIP}'
+    Value: !Sub 'ssh -i "log-tools-app-key.pem" ubuntu@${EIP}'

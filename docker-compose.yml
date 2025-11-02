@@ -12,8 +12,6 @@ services:
     volumes:
       - ./packages/backend/src:/app/src
     restart: unless-stopped
-    depends_on:
-      - log-tools-database
   log-tools-frontend:
     container_name: log-tools-frontend
     build:

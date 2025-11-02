@@ -8,8 +8,6 @@ services:
     env_file:
       - ./packages/backend/.env
     restart: unless-stopped
-    depends_on:
-      - log-tools-database
   log-tools-frontend:
     container_name: log-tools-frontend
     image: allison/log-tools-frontend:0.0.7
@@ -25,6 +23,3 @@ services:
     depends_on:
       - log-tools-frontend
       - log-tools-backend
-
-volumes:
-  family_budget_database_data:
