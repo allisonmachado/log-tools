@@ -8,7 +8,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { LogToolsService } from '@/services/logtools.service';
 import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { finalize } from 'rxjs';
+import { finalize, timestamp } from 'rxjs';
 import { BackendErrorHandlerService } from '@/services/backenderrorhandler.service';
 import { LogData } from '@/types/logs';
 
@@ -20,7 +20,7 @@ import { LogData } from '@/types/logs';
         <form [formGroup]="logsForm">
             <div class="flex mt-8">
                 <div class="card flex flex-col gap-6 w-full">
-                    <div class="font-semibold text-xl">Send Logs</div>
+                    <div class="font-semibold text-xl">New Log</div>
 
                     <div class="flex flex-col gap-6">
                         <label for="message">Record Message</label>
@@ -96,7 +96,10 @@ export class LogToolsForm {
         }
 
         this.loading.set(true);
-        const logData = this.logsForm.value;
+        const logData = {
+            ...this.logsForm.value,
+            timestamp: new Date()
+        };
 
         this.logService
             .sendLogRecord(logData)

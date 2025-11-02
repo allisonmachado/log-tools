@@ -8,11 +8,13 @@ import { LogToolsTable } from './logtoolstable';
     selector: 'app-log-tools',
     standalone: true,
     imports: [FluidModule, LogToolsForm, LogToolsTable],
-    template: `<p-fluid>
-        <app-log-tools-form (onLogCreated)="addLog($event)"></app-log-tools-form>
+    template: `
+        <p-fluid>
+            <app-log-tools-form (onLogCreated)="addLog($event)"></app-log-tools-form>
 
-        <app-log-tools-table [logs]="logData()"></app-log-tools-table>
-    </p-fluid>`
+            <app-log-tools-table [logs]="logData()"></app-log-tools-table>
+        </p-fluid>
+    `
 })
 export class LogTools {
     logData = signal<LogData[]>([]);
