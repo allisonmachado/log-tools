@@ -31,7 +31,7 @@ import { BackendErrorHandlerService } from '@/services/backenderrorhandler.servi
 
                     <div class="flex flex-col gap-6">
                         <label for="level">Severity Level</label>
-                        <p-select id="level" formControlName="level" [options]="logLevels" optionLabel="name" placeholder="Select One" class="w-full"></p-select>
+                        <p-select id="level" formControlName="level" [options]="logLevels" optionLabel="name" optionValue="code" placeholder="Select One" class="w-full"></p-select>
                         @if (logsForm.get('level')?.invalid && (logsForm.get('level')?.touched || logsForm.get('level')?.dirty)) {
                             <small class="text-red-500">Severity Level is required.</small>
                         }
@@ -58,9 +58,11 @@ export class LogTools {
     logsForm!: FormGroup;
     loading = signal<boolean>(true);
     logLevels = [
-        { name: 'Debug', code: 'Debug' },
-        { name: 'Info', code: 'Info' },
-        { name: 'Error', code: 'Error' }
+        { name: 'Error', code: 'error' },
+        { name: 'Warning', code: 'warn' },
+        { name: 'Info', code: 'log' },
+        { name: 'Debug', code: 'debug' },
+        { name: 'Verbose', code: 'verbose' }
     ];
 
     constructor(

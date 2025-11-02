@@ -9,8 +9,9 @@ import { LogData } from '@/types/logs';
 export class LogToolsService {
     private readonly http = inject(HttpClient);
 
-    sendLogRecord(logData: Partial<LogData>): Observable<any> {
-        console.log('Log record sent:', logData);
-        return of(null).pipe(delay(2000));
+    sendLogRecord(logData: Partial<LogData>) {
+        return this.http.post('/api/logs', logData, {
+            withCredentials: true
+        });
     }
 }
