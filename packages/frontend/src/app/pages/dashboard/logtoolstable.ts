@@ -1,12 +1,12 @@
+import { LogTag } from '@/components/logtag';
 import { LogData } from '@/types/logs';
 import { Component, Input } from '@angular/core';
 import { TableModule } from 'primeng/table';
-import { TagModule } from 'primeng/tag';
 
 @Component({
     selector: 'app-log-tools-table',
     standalone: true,
-    imports: [TableModule, TagModule],
+    imports: [TableModule, LogTag],
     template: `
         <div class="flex mt-8">
             <div class="card flex flex-col gap-6 w-full">
@@ -23,7 +23,7 @@ import { TagModule } from 'primeng/tag';
                     <ng-template #body let-l>
                         <tr>
                             <td>{{ l.timestamp }}</td>
-                            <td><p-tag value="{{ l.level }}" /></td>
+                            <td><app-log-tag [log]="l" /></td>
                             <td style="width: 60%;">{{ l.message }}</td>
                         </tr>
                     </ng-template>
